@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="10" height="10" tilewidth="32" tileheight="32">
+ <tileset firstgid="1" name="dirt2" tilewidth="32" tileheight="32">
+  <image source="tilesets/dirt2.png" width="96" height="192"/>
+  <tile id="17">
+   <properties>
+    <property name="name" value="dirt"/>
+    <property name="obstacle" value="1"/>
+   </properties>
+  </tile>
+ </tileset>
+ <layer name="bg1" width="10" height="10">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+18,18,18,18,18,18,18,18,18,18,
+18,18,18,18,18,18,18,18,18,18,
+18,18,18,18,18,18,18,18,18,18
+</data>
+ </layer>
+ <objectgroup name="sprites" width="10" height="10">
+  <properties>
+   <property name="focus" value="player"/>
+  </properties>
+  <object name="player" type="Player" x="32" y="140" width="32" height="64"/>
+ </objectgroup>
+</map>
