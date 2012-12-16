@@ -1,14 +1,19 @@
 local ATL = require("lib/Advanced-Tiled-Loader").Loader
 local Camera = require 'lib/hump/camera'
+local HC = require 'lib/HardonCollider'
 local sprite = require('src/sprite')
 
 local World = Class{function(self, map)
   self.map = map
   self.cam = Camera.new(980, 1260, 1, 0)
+  self.collider = HC(100, function(dt, shapeA, shapeB, mtvX, mtvY)
+    self:onCollide(dt, shapeA, shapeB, mtvX, mtvY)
+  end)
   self.gravity = 300
   self.focus = nil
   self.turn = 1
   self.keyInputEnabled = true
+  self.shapes = {}
   self._keysPressed = {}
 
   -- Set the background image
@@ -61,10 +66,14 @@ function World.fromTmx(filename)
 end
 
 function World:register(spr)
+  local shape = spr:initShape(self.collider)
   self.sprites[spr.id] = spr
+  self.shapes[shape] = spr.id
 end
 
 function World:unregister(spr)
+  self.shapes[spr.shape] = nil
+  self.collider:remove(spr.shape)
   self.sprites[spr.id] = nil
 end
 
@@ -81,6 +90,7 @@ function World:update(dt)
     -- self.cam.y = self.focus.pos.y
     self.cam.y = dy
   end
+  self.collider:update(dt)
   self.map:setDrawRange(self.cam.x - dx, self.cam.y - dy,
                         self.cam.x + dx, self.cam.y + dy)
 end
@@ -100,6 +110,14 @@ end
 
 function World:focusOn(spr)
   self.focus = spr
+end
+
+function World:onCollide(dt, shapeA, shapeB, mtvX, mtvY)
+  local spriteA, spriteB
+  spriteA = self.sprites[self.shapes[shapeA]]
+  spriteB = self.sprites[self.shapes[shapeB]]
+  spriteA:onCollide(dt, spriteB, mtvX, mtvY, self)
+  spriteB:onCollide(dt, spriteA, mtvX, mtvY, self)
 end
 
 function World:pressedKey(key)

@@ -1,9 +1,19 @@
 vector = require 'lib/hump/vector'
 
 
-local Dimensions = Class{function(self, w, h)
+local Dimensions = Class{function(self, w, h, offsetX, offsetY)
   self.w = w
   self.h = h
+  if offsetX == nil then
+    self.offsetX = 0
+  else
+    self.offsetX = offsetX
+  end
+  if offsetY == nil then
+    self.offsetY = 0
+  else
+    self.offsetY = offsetY
+  end
 end}
 
 function Dimensions:tostring()

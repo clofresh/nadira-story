@@ -44,7 +44,7 @@ function AnimationSet:update(dt, sprite)
 end
 function AnimationSet:draw(sprite)
   if self.currentAnimation then
-    self.currentAnimation:draw(self.image, sprite.pos.x, sprite.pos.y, 0, sprite.pos.dir, 1, sprite.dim.w / 2, 0)
+    self.currentAnimation:draw(self.image, sprite.pos.x, sprite.pos.y, 0, sprite.pos.dir, 1, sprite.dim.offsetX, sprite.dim.offsetY)
   end
 end
 function AnimationSet:isFinished()

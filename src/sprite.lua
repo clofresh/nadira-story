@@ -33,9 +33,18 @@ function Sprite:animationFinished()
   return self.animation and self.animation:isFinished()
 end
 
+function Sprite:initShape(collider)
+  self.shape = collider:addRectangle(
+    self.pos.x + self.dim.w / 2,
+    self.pos.y + self.dim.h / 2,
+    self.dim.w, self.dim.h)
+  return self.shape
+end
+
 function Sprite:update(dt, world)
   self:planActions(dt, world)
   self:act(dt, world)
+  self.shape:moveTo(self.pos.x + self.dim.w / 2, self.pos.y + self.dim.h / 2)
   if self.animationSet then
     self.animationSet:update(dt, self)
   end
@@ -46,6 +55,10 @@ end
 
 function Sprite:enqueue(action)
   table.insert(self.toDo, action)
+end
+
+function Sprite:clearToDo()
+  self.toDo = {}
 end
 
 function Sprite:act(dt, world)
@@ -218,14 +231,14 @@ end
 
 function Sprite:draw()
   if debugMode then
-    love.graphics.rectangle('fill', self.pos.x, self.pos.y, self.dim.w, self.dim.h)
+    self.shape:draw('fill')
   end
   if self.animationSet then
     self.animationSet:draw(self)
   end
 end
 
-function Sprite:onCollide(dt, otherSprite, mtvX, mtvY)
+function Sprite:onCollide(dt, otherSprite, mtvX, mtvY, world)
 end
 
 function Sprite:applyDamage(attacker, amount, mtvX, mtvY)
@@ -252,7 +265,7 @@ function Slime:planActions(dt, world)
   elseif rand == 2 then
     vx = -self.velocity
   end
-  self:enqueue(self:move(vector(vx, vy), 2, world))
+  self:enqueue(self:move(vector(vx, vy), .5, world))
 end
 
 -- Player
@@ -261,13 +274,14 @@ local Player = Class{inherits=Sprite, function(self, id, name, pos, dir, dim, an
   self.walkVelocity = 200
   self.jumpVelocity = -400
   self.jumpDuration = nil
-  self.jumpMaxDuration = .25
+  self.jumpMaxDuration = .125
 end}
 
-function Player:onCollide(dt, otherSprite, mtvX, mtvY)
-  if otherSprite.properties and otherSprite.properties.obstruction then
-    self.pos:move(mtvX, mtvY)
-  end
+function Player:onCollide(dt, otherSprite, mtvX, mtvY, world)
+  util.log("Player collision")
+  self:clearToDo()
+  self:enqueue(self:move(vector(mtvX*10, world.gravity), .025, world))
+  -- self.pos:move(mtvX, mtvY)
 end
 
 function Player:planActions(dt, world)
@@ -331,12 +345,25 @@ local idSequence = 0
 function fromTmx(obj)
   local cls = exports[obj.type]
   idSequence = idSequence + 1
+  local width, height
+  if obj.properties.width then
+    width = obj.properties.width
+  else
+    width = obj.width
+  end
+  if obj.properties.height then
+    height = obj.properties.height
+  else
+    height = obj.height
+  end
+  
   local s = cls(
     idSequence,
     obj.name,
     vector(obj.x, obj.y),
     "E",
-    util.Dimensions(obj.width, obj.height),
+    util.Dimensions(width, height,
+      obj.properties.offsetX, obj.properties.offsetY),
     graphics.animations[obj.type]
   )
   util.log("Loaded sprite %d: %s", s.id, s:tostring())
