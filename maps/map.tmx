@@ -178,10 +178,38 @@
     <property name="width" value="16"/>
    </properties>
   </object>
-  <object name="slime" type="Slime" x="640" y="320" width="32" height="32"/>
-  <object name="slime" type="Slime" x="928" y="480" width="32" height="32"/>
-  <object name="slime" type="Slime" x="1152" y="480" width="32" height="32"/>
-  <object name="slime" type="Slime" x="1600" y="416" width="32" height="32"/>
+  <object name="slime" type="Slime" x="640" y="480" width="32" height="32">
+   <properties>
+    <property name="height" value="16"/>
+    <property name="offsetX" value="8"/>
+    <property name="offsetY" value="13"/>
+    <property name="width" value="16"/>
+   </properties>
+  </object>
+  <object name="slime" type="Slime" x="992" y="480" width="32" height="32">
+   <properties>
+    <property name="height" value="16"/>
+    <property name="offsetX" value="8"/>
+    <property name="offsetY" value="13"/>
+    <property name="width" value="16"/>
+   </properties>
+  </object>
+  <object name="slime" type="Slime" x="1216" y="480" width="32" height="32">
+   <properties>
+    <property name="height" value="16"/>
+    <property name="offsetX" value="8"/>
+    <property name="offsetY" value="13"/>
+    <property name="width" value="16"/>
+   </properties>
+  </object>
+  <object name="slime" type="Slime" x="1600" y="416" width="32" height="32">
+   <properties>
+    <property name="height" value="16"/>
+    <property name="offsetX" value="8"/>
+    <property name="offsetY" value="13"/>
+    <property name="width" value="16"/>
+   </properties>
+  </object>
  </objectgroup>
  <layer name="fgbushes" width="100" height="20">
   <data encoding="csv">
