@@ -10,6 +10,11 @@ local World = Class{function(self, map)
   self.keyInputEnabled = true
   self._keysPressed = {}
 
+  -- Set the background image
+  if map.properties.background then
+    self:setBackground(map.properties.background)
+  end
+
   -- Instantiate the sprites
   local spriteLayer = map("sprites")
   self.sprites = {}
@@ -62,6 +67,10 @@ function World:unregister(spr)
   self.sprites[spr.name] = nil
 end
 
+function World:setBackground(background)
+  self.background = love.graphics.newImage(background)
+end
+
 function World:update(dt)
   local dx = love.graphics.getWidth()/2
   local dy = love.graphics.getHeight()/2
@@ -77,6 +86,9 @@ end
 
 function World:draw()
   --log("Drawing turn %d", self.turn)
+  if self.background then
+    love.graphics.draw(self.background)
+  end
   self.cam:draw(function()
     self.map:draw()
   end)
