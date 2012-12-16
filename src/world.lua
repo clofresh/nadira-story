@@ -21,6 +21,12 @@ local World = Class{function(self, map)
     self:setBackground(map.properties.background)
   end
 
+  if map.properties.debugMode == 1 then
+    debugMode = true
+  else
+    debugMode = false
+  end
+
   -- Instantiate the sprites
   local spriteLayer = map("sprites")
   self.sprites = {}
