@@ -94,14 +94,15 @@ function Sprite:move(velocity, duration, world)
     -- Find an obstacles that might prevent the sprite from taking the
     -- desired step, first on the x axis, then the y axis
     local actualStep
+    local x1, y1, x2, y2 = self.sprite.shape:bbox()
     if step.x ~= 0 then
       self.sprite:setAnimation('walking')
       local tryX = self.sprite.pos + vector(step.x, 0)
-      local leadingEdge
+      local leadingEdgeX
       if step.x > 0 then
-        leadingEdge = self.sprite.pos + vector(self.sprite.dim.w, 0)
+        leadingEdgeX = x2
       elseif step.x < 0 then
-        leadingEdge = self.sprite.pos
+        leadingEdgeX = x1
       else
         error("Unexpected value for step.x")
       end
@@ -109,13 +110,14 @@ function Sprite:move(velocity, duration, world)
       local platformLayer = world.map.layers["bg1"]
       local tileX = math.floor(tryX.x / world.map.tileWidth)
       local tileY = math.floor(tryX.y / world.map.tileHeight)
-      local tileWidth = math.floor(self.sprite.dim.w / world.map.tileWidth)
+      local tileWidth = math.floor(self.sprite.dim.w / world.map.tileWidth) + 1
       local tileHeight = math.floor(self.sprite.dim.h / world.map.tileHeight)
 
       local closestObstacle
       for obsTileX, obsTileY, tile in platformLayer:rectangle(tileX, tileY,
                                         tileWidth, tileHeight, false) do
         if tile.properties.obstacle then
+          util.log("Tile %d (%d, %d)", tile.id, obsTileX, obsTileY)
           if step.x > 0 then
             obsX = obsTileX * world.map.tileWidth
           elseif step.x < 0 then
@@ -125,22 +127,21 @@ function Sprite:move(velocity, duration, world)
           end
           if closestObstacle == nil
             or (step.x > 0 and
-                obsX > leadingEdge.x and obsX < closestObstacle.x)
+                obsX > leadingEdgeX and obsX < closestObstacle.x)
             or (step.x < 0 and
-                obsX > closestObstacle.x and obsX < leadingEdge.x) then
-            closestObstacle = {x=obsX, tile=tile}
+                obsX > closestObstacle.x and obsX < leadingEdgeX) then
+            closestObstacle = {x=obsX, tileX=obsTileX, tile=tile}
           end
         end
       end
       if closestObstacle then
-        -- util.log("Found x-obstacle at %f (leading edge at : %f)",
-        --  closestObstacle.x, leadingEdge.x)
+        util.log("Found x-obstacle at %f (leading edge at : %f, tileX is: %f, tile id is: %f)", closestObstacle.x, leadingEdgeX, closestObstacle.tileX, closestObstacle.tile.id)
         if step.x > 0 then
           actualStep = vector(math.min(step.x,
-                              closestObstacle.x - leadingEdge.x - 1), step.y)
+                              closestObstacle.x - leadingEdgeX - 1), step.y)
         elseif step.x < 0 then
           actualStep = vector(-1 * math.min(math.abs(step.x),
-                              math.abs(closestObstacle.x - leadingEdge.x)), step.y)
+                              math.abs(closestObstacle.x - leadingEdgeX)), step.y)
         else
           error("Unexpected value for step.x")
         end
@@ -154,11 +155,11 @@ function Sprite:move(velocity, duration, world)
 
     if step.y ~= 0 then
       local tryY = self.sprite.pos + vector(0, step.y)
-      local leadingEdge
+      local leadingEdgeY
       if step.y > 0 then
-        leadingEdge = self.sprite.pos + vector(0, self.sprite.dim.h)
+        leadingEdgeY = y2
       elseif step.y < 0 then
-        leadingEdge = self.sprite.pos
+        leadingEdgeY = y1
       else
         error("Unexpected value for step.y")
       end
@@ -167,7 +168,7 @@ function Sprite:move(velocity, duration, world)
       local tileX = math.floor(tryY.x / world.map.tileWidth)
       local tileY = math.floor(tryY.y / world.map.tileHeight)
       local tileWidth = math.floor(self.sprite.dim.w / world.map.tileWidth)
-      local tileHeight = math.floor(self.sprite.dim.h / world.map.tileHeight)
+      local tileHeight = math.floor(self.sprite.dim.h / world.map.tileHeight) + 1
 
       local closestObstacle
       for obsTileX, obsTileY, tile in platformLayer:rectangle(tileX, tileY,
@@ -182,22 +183,22 @@ function Sprite:move(velocity, duration, world)
           end
           if closestObstacle == nil
             or (step.y > 0 and
-                obsY > leadingEdge.y and obsY < closestObstacle.y)
+                obsY > leadingEdgeY and obsY < closestObstacle.y)
             or (step.y < 0 and
-                obsY > closestObstacle.y and obsY < leadingEdge.y) then
+                obsY > closestObstacle.y and obsY < leadingEdgeY) then
             closestObstacle = {y=obsY, tile=tile}
           end
         end
       end
       if closestObstacle then
         -- util.log("Found y-obstacle at %f (leading edge at : %f)",
-        --  closestObstacle.y, leadingEdge.y)
+        --  closestObstacle.y, leadingEdgeY)
         if step.y > 0 then
           actualStep = vector(actualStep.x, math.min(step.y,
-                        closestObstacle.y - leadingEdge.y - 1))
+                        closestObstacle.y - leadingEdgeY - 1))
         elseif step.y < 0 then
           actualStep = vector(actualStep.x, -1 * math.min(math.abs(step.y),
-                              math.abs(closestObstacle.y - leadingEdge.y)))
+                              math.abs(closestObstacle.y - leadingEdgeY)))
         else
           error("Unexpected value for step.y")
         end
@@ -356,7 +357,7 @@ function fromTmx(obj)
   else
     height = obj.height
   end
-  
+
   local s = cls(
     idSequence,
     obj.name,
