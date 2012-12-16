@@ -9,7 +9,8 @@ function Action:execute(dt, world)
   self:toExecute(dt, world)
 end
 
-local Sprite = Class{function(self, name, pos, dir, dim, animationSet)
+local Sprite = Class{function(self, id, name, pos, dir, dim, animationSet)
+  self.id = id
   self.name = name
   self.pos = pos
   self.dir = dir
@@ -41,6 +42,10 @@ function Sprite:update(dt, world)
 end
 
 function Sprite:planActions(dt, world)
+end
+
+function Sprite:enqueue(action)
+  table.insert(self.toDo, action)
 end
 
 function Sprite:act(dt, world)
@@ -115,8 +120,8 @@ function Sprite:move(velocity, duration, world)
         end
       end
       if closestObstacle then
-        util.log("Found x-obstacle at %f (leading edge at : %f)",
-          closestObstacle.x, leadingEdge.x)
+        -- util.log("Found x-obstacle at %f (leading edge at : %f)",
+        --  closestObstacle.x, leadingEdge.x)
         if step.x > 0 then
           actualStep = vector(math.min(step.x,
                               closestObstacle.x - leadingEdge.x - 1), step.y)
@@ -172,8 +177,8 @@ function Sprite:move(velocity, duration, world)
         end
       end
       if closestObstacle then
-        util.log("Found y-obstacle at %f (leading edge at : %f)",
-          closestObstacle.y, leadingEdge.y)
+        -- util.log("Found y-obstacle at %f (leading edge at : %f)",
+        --  closestObstacle.y, leadingEdge.y)
         if step.y > 0 then
           actualStep = vector(actualStep.x, math.min(step.y,
                         closestObstacle.y - leadingEdge.y - 1))
@@ -233,16 +238,26 @@ function Sprite:tostring()
 end
 
 
--- Nadira
-local Nadira = Class{inherits=Sprite, function(self, name, pos, dir, dim, animationSet)
-  Sprite.construct(self, name, pos, dir, dim, animationSet)
-  self.velocity = 110
+local Slime = Class{inherits=Sprite, function(self, id, name, pos, dir, dim, animationSet)
+  Sprite.construct(self, id, name, pos, dir, dim, animationSet)
+  self.velocity = 50
 end}
 
+function Slime:planActions(dt, world)
+  local rand = math.random(1, 3)
+  local vx
+  local vy = world.gravity
+  if rand == 1 then
+    vx = self.velocity
+  elseif rand == 2 then
+    vx = -self.velocity
+  end
+  self:enqueue(self:move(vector(vx, vy), 2, world))
+end
 
 -- Player
-local Player = Class{inherits=Sprite, function(self, name, pos, dir, dim, animationSet)
-  Sprite.construct(self, name, pos, dir, dim, animationSet)
+local Player = Class{inherits=Sprite, function(self, id, name, pos, dir, dim, animationSet)
+  Sprite.construct(self, id, name, pos, dir, dim, animationSet)
   self.walkVelocity = 200
   self.jumpVelocity = -400
   self.jumpDuration = nil
@@ -276,7 +291,7 @@ function Player:planActions(dt, world)
   end
 
   local vx = 0
-  local vy = 300 -- gravity
+  local vy = world.gravity
 
 
   if keysPressed[" "] and self.jumpDuration == nil then
@@ -300,29 +315,31 @@ function Player:planActions(dt, world)
     end
   end
   local velocity = vector(vx, vy)
-  table.insert(self.toDo, self:move(velocity, .01, world))
+  self:enqueue(self:move(velocity, .01, world))
 end
 
 
 
 
 local exports = {
-  Sprite     = Sprite,
-  Player     = Player,
-  Nadira     = Nadira,
+  Sprite = Sprite,
+  Player = Player,
+  Slime  = Slime,
 }
 
+local idSequence = 0
 function fromTmx(obj)
   local cls = exports[obj.type]
-  util.log(obj.name)
+  idSequence = idSequence + 1
   local s = cls(
+    idSequence,
     obj.name,
     vector(obj.x, obj.y),
     "E",
     util.Dimensions(obj.width, obj.height),
-    graphics.animations[obj.name]
+    graphics.animations[obj.type]
   )
-  util.log("Loaded %s", s:tostring())
+  util.log("Loaded sprite %d: %s", s.id, s:tostring())
   return s
 end
 

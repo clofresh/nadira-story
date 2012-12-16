@@ -5,6 +5,7 @@ local sprite = require('src/sprite')
 local World = Class{function(self, map)
   self.map = map
   self.cam = Camera.new(980, 1260, 1, 0)
+  self.gravity = 300
   self.focus = nil
   self.turn = 1
   self.keyInputEnabled = true
@@ -60,11 +61,11 @@ function World.fromTmx(filename)
 end
 
 function World:register(spr)
-  self.sprites[spr.name] = spr
+  self.sprites[spr.id] = spr
 end
 
 function World:unregister(spr)
-  self.sprites[spr.name] = nil
+  self.sprites[spr.id] = nil
 end
 
 function World:setBackground(background)
