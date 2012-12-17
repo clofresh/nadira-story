@@ -24,6 +24,7 @@ end
 
 function love.draw()
   world:draw()
+  love.graphics.print(string.format("Memory: %dKB", math.floor(collectgarbage('count'))), 1, 1)
 end
 
 function love.keypressed(key, unicode)

@@ -54,7 +54,10 @@ function Sprite:planActions(dt, world)
 end
 
 function Sprite:enqueue(action)
-  table.insert(self.toDo, action)
+  -- Don't let the actions queue get too long
+  if #self.toDo < 20 then
+    table.insert(self.toDo, action)
+  end
 end
 
 function Sprite:clearToDo()
@@ -117,7 +120,7 @@ function Sprite:move(velocity, duration, world)
       for obsTileX, obsTileY, tile in platformLayer:rectangle(tileX, tileY,
                                         tileWidth, tileHeight, false) do
         if tile.properties.obstacle then
-          util.log("Tile %d (%d, %d)", tile.id, obsTileX, obsTileY)
+          -- util.log("Tile %d (%d, %d)", tile.id, obsTileX, obsTileY)
           if step.x > 0 then
             obsX = obsTileX * world.map.tileWidth
           elseif step.x < 0 then
@@ -135,7 +138,7 @@ function Sprite:move(velocity, duration, world)
         end
       end
       if closestObstacle then
-        util.log("Found x-obstacle at %f (leading edge at : %f, tileX is: %f, tile id is: %f)", closestObstacle.x, leadingEdgeX, closestObstacle.tileX, closestObstacle.tile.id)
+        -- util.log("Found x-obstacle at %f (leading edge at : %f, tileX is: %f, tile id is: %f)", closestObstacle.x, leadingEdgeX, closestObstacle.tileX, closestObstacle.tile.id)
         if step.x > 0 then
           actualStep = vector(math.min(step.x,
                               closestObstacle.x - leadingEdgeX - 1), step.y)
@@ -279,7 +282,7 @@ local Player = Class{inherits=Sprite, function(self, id, name, pos, dir, dim, an
 end}
 
 function Player:onCollide(dt, otherSprite, mtvX, mtvY, world)
-  util.log("Player collision")
+  -- util.log("Player collision")
   self:clearToDo()
   self:enqueue(self:move(vector(mtvX*10, world.gravity), .025, world))
   -- self.pos:move(mtvX, mtvY)
@@ -288,11 +291,6 @@ end
 function Player:planActions(dt, world)
   local keysPressed = world:keysPressed()
   local direction = ""
-
-  -- Don't let the actions queue get too long
-  if #self.toDo > 20 then
-    return
-  end
 
   -- if keysPressed["w"] then
   --   direction = direction .. "N"

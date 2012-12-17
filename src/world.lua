@@ -49,26 +49,13 @@ function World:setMap(map)
   -- sprite update callback
   spriteLayer.update = function(layer, dt)
     for name, spr in pairs(self.sprites) do
-      -- table.insert(spr.toDo, spr:move(vector(0, 1), 100, self))
       spr:update(dt, self)
     end
   end
 
   -- sprite draw callback
   spriteLayer.draw = function(layer)
-    local drawOrder = {}
-    local i = 1
     for name, spr in pairs(self.sprites) do
-      drawOrder[i] = spr
-      i = i + 1
-    end
-    table.sort(drawOrder, function(a, b)
-      return a.pos and b.pos and a.pos.y < b.pos.y
-    end)
-    for i, spr in ipairs(drawOrder) do
-      --if spr.tostring then
-      --  log("Drawing %s", spr:tostring())
-      --end
       spr:draw()
     end
   end
@@ -131,7 +118,7 @@ function World:draw()
   self.cam:draw(function()
     self.map:draw()
   end)
-  love.graphics.print(string.format("(%f, %f)", self.cam.x, self.cam.y), 1, 1)
+  love.graphics.print(string.format("Cam: (%f, %f)", self.cam.x, self.cam.y), 1, 14)
 
   self.turn = self.turn + 1
 end
