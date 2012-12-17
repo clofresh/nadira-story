@@ -39,13 +39,16 @@
   <properties>
    <property name="focus" value="player"/>
   </properties>
-  <object name="player" type="Player" x="32" y="448" width="32" height="64">
+ </objectgroup>
+ <objectgroup name="exits" width="300" height="20">
+  <object name="A" x="0" y="448" width="32" height="64">
    <properties>
-    <property name="height" value="32"/>
-    <property name="offsetX" value="24"/>
-    <property name="offsetY" value="30"/>
-    <property name="width" value="16"/>
+    <property name="entrance" value="B"/>
+    <property name="map" value="village_entrance"/>
    </properties>
   </object>
+ </objectgroup>
+ <objectgroup name="entrances" width="300" height="20">
+  <object name="A" x="32" y="448" width="32" height="64"/>
  </objectgroup>
 </map>

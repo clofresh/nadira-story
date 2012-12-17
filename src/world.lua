@@ -19,8 +19,8 @@ local World = Class{function(self, map)
   self:setMap(map)
 end}
 
-function World.fromTmx(filename)
-  return World(ATL.load(filename))
+function World.fromTmx(map)
+  return World(ATL.load(map..".tmx"))
 end
 
 function World:setMap(map)
@@ -28,11 +28,41 @@ function World:setMap(map)
   if map.properties.background then
     self:setBackground(map.properties.background)
   end
-
+  map.drawObjects = false
   if map.properties.debugMode == 1 then
     debugMode = true
   else
     debugMode = false
+  end
+
+  -- Instantiate the entrances
+  local entrancesLayer = map("entrances")
+  self.entrances = {}
+  for i, obj in pairs(entrancesLayer.objects) do
+    self.entrances[obj.name] = obj
+  end
+
+  -- Instantiate the exits
+  local exitsLayer = map("exits")
+  self.exitsByName = {}
+  self.exitsByTile = {}
+  for i, obj in pairs(exitsLayer.objects) do
+    self.exitsByName[obj.name] = {
+      name = obj.name,
+      map = obj.properties.map,
+      entrance = obj.properties.entrance,
+    }
+    -- Build up a spatial hash of exits indexed by tile number
+    for i = obj.y, obj.y + obj.height - 1, map.tileHeight do
+      local row = math.floor(i / map.tileHeight)
+      for j = obj.x, obj.x + obj.width - 1, map.tileWidth do
+        local col = math.floor(j / map.tileWidth)
+        local tileNum = row * map.width + col
+        self.exitsByTile[tileNum] = obj.name
+        util.log("Exit %s at tile %d", obj.name, tileNum)
+      end
+    end
+
   end
 
   -- Instantiate the sprites
@@ -88,10 +118,34 @@ function World:clearBackground()
   self.background = nil
 end
 
-function World:changeMap(filename)
+function World:getExit(tileNum)
+  local exitName = self.exitsByTile[tileNum]
+  if exitName then
+    return self.exitsByName[exitName]
+  else
+    return nil
+  end
+end
+
+function World:clearExits()
+  self.exitsByName = nil
+  self.exitsByTile = nil
+end
+
+function World:getEntrance(entranceName)
+  return self.entrances[entranceName]
+end
+
+function World:clearEntrances()
+  self.entrances = nil
+end
+
+function World:changeMap(mapName)
   self:unregisterAll()
   self:clearBackground()
-  local newMap = ATL.load(filename)
+  self:clearExits()
+  self:clearEntrances()
+  local newMap = ATL.load(mapName .. ".tmx")
   self:setMap(newMap)
 end
 
@@ -118,8 +172,14 @@ function World:draw()
   self.cam:draw(function()
     self.map:draw()
   end)
-  love.graphics.print(string.format("Cam: (%f, %f)", self.cam.x, self.cam.y), 1, 14)
-
+  love.graphics.print(string.format("Cam: (%f, %f)", self.cam.x, self.cam.y), 1, 15)
+  if self.focus then
+    local tiles = ""
+    for i, tileNum in pairs(self.focus:currentTileNums(self)) do
+      tiles = tiles .. tileNum .. " "
+    end
+    love.graphics.print(string.format("TileNums: %s", tiles), 1, 29)
+  end
   self.turn = self.turn + 1
 end
 
@@ -138,10 +198,10 @@ end
 function World:pressedKey(key)
   if key == "1" then
     util.log("Loading village entrance")
-    self:changeMap('village_entrance.tmx')
+    self:changeMap('village_entrance')
   elseif key == "2" then
     util.log("Loading village")
-    self:changeMap('village.tmx')
+    self:changeMap('village')
   end
   if self.keyInputEnabled then
     self._keysPressed[key] = true

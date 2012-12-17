@@ -6,13 +6,21 @@ util = require('src/util')
 graphics = require('src/graphics')
 
 local World = require('src/world').World
+local sprite = require('src/sprite')
 
-local world
+local world, player
 
 function love.load()
   graphics.load()
-  world = World.fromTmx('village_entrance.tmx')
-
+  world = World.fromTmx('village_entrance')
+  local entrance = world.entrances.A
+  player = sprite.fromTmx({
+    x=entrance.x, y=entrance.y,
+    name='player',
+    type='Player'
+  })
+  world:register(player)
+  world:focusOn(player)
   local music = love.audio.newSource("audio/koertes-ccby-birdsongloop16s.ogg")
   music:setLooping(true)
   love.audio.play(music)

@@ -249,6 +249,21 @@ function Sprite:applyDamage(attacker, amount, mtvX, mtvY)
   self.pos:move(mtvX, mtvY)
 end
 
+function Sprite:currentTileNums(world)
+  local x1, y1, x2, y2 = self.shape:bbox()
+  local xStep, yStep = world.map.tileWidth, world.map.tileHeight
+  local tileNums = {}
+  for i = y1, y2 - 1, yStep do
+    local row = math.floor(i / yStep)
+    for j = x1, x2 - 1, xStep do
+      local col = math.floor(j / xStep)
+      local tileNum = row * world.map.width + col
+      table.insert(tileNums, tileNum)
+    end
+  end
+  return tileNums
+end
+
 function Sprite:tostring()
   return string.format("%s (%s; %s)", self.name, tostring(self.pos),
     self.dim:tostring())
@@ -284,7 +299,7 @@ end}
 function Player:onCollide(dt, otherSprite, mtvX, mtvY, world)
   -- util.log("Player collision")
   self:clearToDo()
-  self:enqueue(self:move(vector(mtvX*10, world.gravity), .025, world))
+  -- self:enqueue(self:move(vector(mtvX*10, world.gravity), .025, world))
   -- self.pos:move(mtvX, mtvY)
 end
 
@@ -329,6 +344,22 @@ function Player:planActions(dt, world)
   end
   local velocity = vector(vx, vy)
   self:enqueue(self:move(velocity, .01, world))
+
+  -- Check if we should exit
+  local tileNums = self:currentTileNums(world)
+  for i, tileNum in pairs(tileNums) do
+    -- util.log("tileNum: %f", tileNum)
+    local exit = world:getExit(tileNum)
+    if exit and exit.map then
+      util.log("Changing maps to %s", exit.map)
+      world:changeMap(exit.map)
+      local entrance = world:getEntrance(exit.entrance)
+      self.pos = vector(entrance.x, entrance.y)
+      world:register(self)
+      world:focusOn(self)
+      break
+    end
+  end
 end
 
 
@@ -340,20 +371,41 @@ local exports = {
   Slime  = Slime,
 }
 
+local adjustments = {
+  player = {width=16, height=32, offsetX=24, offsetY=30},
+  slime  = {width=16, height=16, offsetX=8,  offsetY=13},
+}
 local idSequence = 0
 function fromTmx(obj)
   local cls = exports[obj.type]
   idSequence = idSequence + 1
-  local width, height
-  if obj.properties.width then
-    width = obj.properties.width
+  local width, height, offsetX, offsetY
+  local adjustment = adjustments[obj.name]
+  local props = obj.properties or {}
+
+  if props.width then
+    width = props.width
+  elseif adjustment and adjustment.width then
+    width = adjustment.width
   else
     width = obj.width
   end
-  if obj.properties.height then
-    height = obj.properties.height
+  if props.height then
+    height = props.height
+  elseif adjustment and adjustment.height then
+    height = adjustment.height
   else
     height = obj.height
+  end
+  if props.offsetX then
+    offsetX = props.offsetX
+  elseif adjustment and adjustment.offsetX then
+    offsetX = adjustment.offsetX
+  end
+  if props.offsetY then
+    offsetY = props.offsetY
+  elseif adjustment and adjustment.offsetY then
+    offsetY = adjustment.offsetY
   end
 
   local s = cls(
@@ -361,8 +413,7 @@ function fromTmx(obj)
     obj.name,
     vector(obj.x, obj.y),
     "E",
-    util.Dimensions(width, height,
-      obj.properties.offsetX, obj.properties.offsetY),
+    util.Dimensions(width, height, offsetX, offsetY),
     graphics.animations[obj.type]
   )
   util.log("Loaded sprite %d: %s", s.id, s:tostring())
