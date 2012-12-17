@@ -11,7 +11,7 @@ local world
 
 function love.load()
   graphics.load()
-  world = World.fromTmx('maps/map.tmx')
+  world = World.fromTmx('village_entrance.tmx')
 
   local music = love.audio.newSource("audio/koertes-ccby-birdsongloop16s.ogg")
   music:setLooping(true)

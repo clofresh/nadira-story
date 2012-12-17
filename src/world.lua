@@ -3,8 +3,8 @@ local Camera = require 'lib/hump/camera'
 local HC = require 'lib/HardonCollider'
 local sprite = require('src/sprite')
 
+ATL.path = "maps/"
 local World = Class{function(self, map)
-  self.map = map
   self.cam = Camera.new(980, 1260, 1, 0)
   self.collider = HC(100, function(dt, shapeA, shapeB, mtvX, mtvY)
     self:onCollide(dt, shapeA, shapeB, mtvX, mtvY)
@@ -16,6 +16,14 @@ local World = Class{function(self, map)
   self.shapes = {}
   self._keysPressed = {}
 
+  self:setMap(map)
+end}
+
+function World.fromTmx(filename)
+  return World(ATL.load(filename))
+end
+
+function World:setMap(map)
   -- Set the background image
   if map.properties.background then
     self:setBackground(map.properties.background)
@@ -64,11 +72,7 @@ local World = Class{function(self, map)
       spr:draw()
     end
   end
-
-end}
-
-function World.fromTmx(filename)
-  return World(ATL.load(filename))
+  self.map = map
 end
 
 function World:register(spr)
@@ -83,9 +87,27 @@ function World:unregister(spr)
   self.sprites[spr.id] = nil
 end
 
+function World:unregisterAll()
+  for key, spr in pairs(self.sprites) do
+    self:unregister(spr)
+  end
+end
+
 function World:setBackground(background)
   self.background = love.graphics.newImage(background)
 end
+
+function World:clearBackground()
+  self.background = nil
+end
+
+function World:changeMap(filename)
+  self:unregisterAll()
+  self:clearBackground()
+  local newMap = ATL.load(filename)
+  self:setMap(newMap)
+end
+
 
 function World:update(dt)
   local dx = love.graphics.getWidth()/2
@@ -127,6 +149,13 @@ function World:onCollide(dt, shapeA, shapeB, mtvX, mtvY)
 end
 
 function World:pressedKey(key)
+  if key == "1" then
+    util.log("Loading village entrance")
+    self:changeMap('village_entrance.tmx')
+  elseif key == "2" then
+    util.log("Loading village")
+    self:changeMap('village.tmx')
+  end
   if self.keyInputEnabled then
     self._keysPressed[key] = true
   end
