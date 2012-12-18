@@ -251,6 +251,10 @@ end
 
 function Sprite:currentTileNums(world)
   local x1, y1, x2, y2 = self.shape:bbox()
+  x1 = math.min(math.max(x1, 0), world.map.width * world.map.tileWidth)
+  x2 = math.min(math.max(x2, 0), world.map.width * world.map.tileWidth)
+  y1 = math.min(math.max(y1, 0), world.map.height * world.map.tileHeight)
+  y2 = math.min(math.max(y2, 0), world.map.height * world.map.tileHeight)
   local xStep, yStep = world.map.tileWidth, world.map.tileHeight
   local tileNums = {}
   for i = y1, y2 - 1, yStep do
