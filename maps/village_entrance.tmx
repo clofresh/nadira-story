@@ -3,6 +3,7 @@
  <properties>
   <property name="background" value="maps/backgrounds/environment_forestbackground_2.png"/>
   <property name="debugMode" value="0"/>
+  <property name="music" value="audio/koertes-ccby-birdsongloop16s.ogg"/>
  </properties>
  <tileset firstgid="1" name="grass" tilewidth="32" tileheight="32">
   <image source="tilesets/grass.png" width="96" height="192"/>

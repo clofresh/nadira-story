@@ -35,6 +35,11 @@ function World:setMap(map)
     debugMode = false
   end
 
+  -- Set the audio track
+  if map.properties.music then
+    self:setMusic(map.properties.music)
+  end
+
   -- Instantiate the entrances
   local entrancesLayer = map("entrances")
   self.entrances = {}
@@ -118,6 +123,19 @@ function World:clearBackground()
   self.background = nil
 end
 
+function World:setMusic(music_file)
+  self.music = love.audio.newSource(music_file)
+  self.music:setLooping(true)
+  love.audio.play(self.music)
+end
+
+function World:clearMusic()
+  if self.music then
+    love.audio.stop(self.music)
+    self.music = nil
+  end
+end
+
 function World:getExit(tileNum)
   local exitName = self.exitsByTile[tileNum]
   if exitName then
@@ -145,6 +163,7 @@ function World:changeMap(mapName)
   self:clearBackground()
   self:clearExits()
   self:clearEntrances()
+  self:clearMusic()
   local newMap = ATL.load(mapName .. ".tmx")
   self:setMap(newMap)
 end

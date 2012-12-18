@@ -21,9 +21,6 @@ function love.load()
   })
   world:register(player)
   world:focusOn(player)
-  local music = love.audio.newSource("audio/koertes-ccby-birdsongloop16s.ogg")
-  music:setLooping(true)
-  love.audio.play(music)
 end
 
 function love.update(dt)
