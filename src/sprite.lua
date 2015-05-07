@@ -1,15 +1,19 @@
-local Action = Class{function(self, duration, toExecute)
+local Action = Class{}
+
+function Action:init(duration, toExecute)
   self.duration = duration
   self.elapsed = 0
   self.toExecute = toExecute
-end}
+end
 
 function Action:execute(dt, world)
   self.elapsed = self.elapsed + dt
   self:toExecute(dt, world)
 end
 
-local Sprite = Class{function(self, id, name, pos, dir, dim, animationSet)
+local Sprite = Class{}
+
+function Sprite:init(id, name, pos, dir, dim, animationSet)
   self.id = id
   self.name = name
   self.pos = pos
@@ -19,7 +23,7 @@ local Sprite = Class{function(self, id, name, pos, dir, dim, animationSet)
   self:setAnimation('idle')
   self.toDo = {} -- treat as a deque
   self.cooldown = 0
-end}
+end
 
 function Sprite:setAnimation(animationType)
   local animationName = animationType..self.dir
@@ -274,10 +278,11 @@ function Sprite:tostring()
 end
 
 
-local Slime = Class{inherits=Sprite, function(self, id, name, pos, dir, dim, animationSet)
-  Sprite.construct(self, id, name, pos, dir, dim, animationSet)
+local Slime = Class{__includes=Sprite}
+function Slime:init(id, name, pos, dir, dim, animationSet)
+  Sprite.init(self, id, name, pos, dir, dim, animationSet)
   self.velocity = 50
-end}
+end
 
 function Slime:planActions(dt, world)
   local rand = math.random(1, 3)
@@ -292,13 +297,14 @@ function Slime:planActions(dt, world)
 end
 
 -- Player
-local Player = Class{inherits=Sprite, function(self, id, name, pos, dir, dim, animationSet)
-  Sprite.construct(self, id, name, pos, dir, dim, animationSet)
+local Player = Class{__includes=Sprite}
+function Player:init(id, name, pos, dir, dim, animationSet)
+  Sprite.init(self, id, name, pos, dir, dim, animationSet)
   self.walkVelocity = 200
   self.jumpVelocity = -400
   self.jumpDuration = nil
   self.jumpMaxDuration = .125
-end}
+end
 
 function Player:onCollide(dt, otherSprite, mtvX, mtvY, world)
   -- util.log("Player collision")

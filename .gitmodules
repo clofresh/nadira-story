@@ -1,0 +1,12 @@
+[submodule "lib/Advanced-Tiled-Loader"]
+	path = lib/Advanced-Tiled-Loader
+	url = git@github.com:Kadoba/Advanced-Tiled-Loader.git
+[submodule "lib/HardonCollider"]
+	path = lib/HardonCollider
+	url = git@github.com:vrld/HardonCollider.git
+[submodule "lib/anim8"]
+	path = lib/anim8
+	url = git@github.com:kikito/anim8.git
+[submodule "lib/hump"]
+	path = lib/hump
+	url = git@github.com:vrld/hump.git
